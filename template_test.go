@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 	"text/template"
 )
@@ -189,5 +190,24 @@ func TestTemplateFuncLast(t *testing.T) {
 
 	if tBuf.String() != "three" {
 		t.Error("Should return last element in list")
+	}
+}
+
+func TestUnmarshalJSON(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .str }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"str": "hello world!",
+	})
+	if err != nil {
+		t.Error(err)
+		return
 	}
 }

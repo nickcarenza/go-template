@@ -335,3 +335,14 @@ func InterpolateMap(data interface{}, templateMap map[string]interface{}) (map[s
 	}
 	return parsed, nil
 }
+
+// Template is a wrapper that implements unmarshalJSON
+type Template struct {
+	*template.Template
+}
+
+// UnmarshalJSON implementation for Template
+func (t *Template) UnmarshalJSON(data []byte) (err error) {
+	t.Template, err = template.New("template").Parse(string(data))
+	return
+}
