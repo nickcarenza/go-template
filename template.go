@@ -47,6 +47,12 @@ var TemplateFuncs = map[string]interface{}{
 				return 0
 			}
 			xFloat = f
+		case json.Number:
+			f, err := v.Float64()
+			if err != nil {
+				return 0
+			}
+			xFloat = f
 		default:
 			xFloat = 0
 		}
@@ -57,6 +63,12 @@ var TemplateFuncs = map[string]interface{}{
 			yFloat = v
 		case string:
 			f, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				return 0
+			}
+			yFloat = f
+		case json.Number:
+			f, err := v.Float64()
 			if err != nil {
 				return 0
 			}
@@ -185,6 +197,12 @@ var TemplateFuncs = map[string]interface{}{
 				return "", err
 			}
 			return time.Unix(int64(intVal), 0).Format(targetLayout), nil
+		case json.Number:
+			intVal, err := v.Int64()
+			if err != nil {
+				return "", err
+			}
+			return time.Unix(intVal, 0).Format(targetLayout), nil
 		default:
 			return "", fmt.Errorf("Invalid type for time.Unix in formatUnix")
 		}

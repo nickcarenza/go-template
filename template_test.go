@@ -211,3 +211,68 @@ func TestUnmarshalJSON(t *testing.T) {
 		return
 	}
 }
+func TestUnmarshalJSONMultiplyNum(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 5 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": json.Number("5"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"25"` {
+		t.Error("Should result in 25", buf.String())
+	}
+}
+
+func TestUnmarshalJSONMultiplyNumericString(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 5 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": "5",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"25"` {
+		t.Error("Should result in 25", buf.String())
+	}
+}
+
+func TestUnmarshalJSONMultiplyFloat64(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 5 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": float64(5),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"25"` {
+		t.Error("Should result in 25", buf.String())
+	}
+}
