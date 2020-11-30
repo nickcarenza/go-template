@@ -343,6 +343,6 @@ type Template struct {
 
 // UnmarshalJSON implementation for Template
 func (t *Template) UnmarshalJSON(data []byte) (err error) {
-	t.Template, err = template.New("template").Parse(string(data))
+	t.Template, err = template.New("template").Funcs(TemplateFuncs).Parse(string(data))
 	return
 }
