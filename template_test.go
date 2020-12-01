@@ -165,6 +165,35 @@ func TestTemplateFuncFirst(t *testing.T) {
 	}
 }
 
+func TestTemplateFuncFirstOfEmpty(t *testing.T) {
+	var tpl = `{{first .list}}`
+	tmpl, err := template.New(t.Name()).Funcs(map[string]interface{}{
+		"first": TemplateFuncs["first"],
+	}).Parse(tpl)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var data = map[string]interface{}{
+		"list": []string{},
+	}
+
+	var tBuf bytes.Buffer
+	err = tmpl.Execute(&tBuf, data)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if tBuf.String() != "<no value>" {
+		t.Log(tBuf.String())
+		t.Error("Should return first element in list")
+	}
+}
+
 func TestTemplateFuncLast(t *testing.T) {
 	var tpl = `{{last .list}}`
 	tmpl, err := template.New(t.Name()).Funcs(map[string]interface{}{
@@ -304,5 +333,29 @@ func TestUnmarshalJSONMultiplyFloat64(t *testing.T) {
 	}
 	if buf.String() != `25` {
 		t.Error("Should result in 25", buf.String())
+	}
+}
+
+func TestTrimToJSON(t *testing.T) {
+	var err error
+	var jsondata = []byte("\"{{ .Event.comments | toJSON }}\"")
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": map[string]interface{}{
+			"comments": "\"hello\"",
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"\"hello\""` {
+		t.Error(`Should result in "\"hello\""`, buf.String())
 	}
 }
