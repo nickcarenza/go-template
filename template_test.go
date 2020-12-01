@@ -336,7 +336,7 @@ func TestUnmarshalJSONMultiplyFloat64(t *testing.T) {
 	}
 }
 
-func TestTrimToJSON(t *testing.T) {
+func TestEscapedToJSON(t *testing.T) {
 	var err error
 	var jsondata = []byte("\"{{ .Event.comments | toJSON }}\"")
 	var tmpl *Template
@@ -357,5 +357,75 @@ func TestTrimToJSON(t *testing.T) {
 	}
 	if buf.String() != `"\"hello\""` {
 		t.Error(`Should result in "\"hello\""`, buf.String())
+	}
+}
+
+func TestToJSONNull(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .Event.comments | toJSON }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": map[string]interface{}{},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `null` {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestToJsonWithQuotes(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .Event.comments | toJSON }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	var event map[string]interface{}
+	err = json.Unmarshal([]byte(`{"comments":"quote \"this\""}`), &event)
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": event,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"quote \"this\""` {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestUnquote(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .Event.comments | toJSON | unquote }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	var event map[string]interface{}
+	err = json.Unmarshal([]byte(`{"comments":"quote \"this\""}`), &event)
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": event,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `quote \"this\"` {
+		t.Error(`Unexpected result`, buf.String())
 	}
 }
