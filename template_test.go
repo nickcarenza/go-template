@@ -471,3 +471,95 @@ func TestUUID(t *testing.T) {
 		t.Error(`Unexpected result`, buf.String())
 	}
 }
+
+func TestParseJSONBytes(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (parseJSON .bytes).key }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"bytes": []byte(`{"key":"value"}`),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(buf.String())
+	if buf.String() != "value" {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestParseJSONBuffer(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (parseJSON .buf).key }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"buf": bytes.NewBufferString(`{"key":"value"}`),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(buf.String())
+	if buf.String() != "value" {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestParseJSONString(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (parseJSON .string).key }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"string": `{"key":"value"}`,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(buf.String())
+	if buf.String() != "value" {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestParseJSONIOReader(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (parseJSON .ioreader).key }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"ioreader": bytes.NewReader([]byte(`{"key":"value"}`)),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(buf.String())
+	if buf.String() != "value" {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}

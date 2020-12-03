@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -179,11 +180,26 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return http.DefaultClient.Do(req)
 	},
-	"parseJSON": func(data []byte) (interface{}, error) {
+	"parseJSON": func(data interface{}) (interface{}, error) {
 		var v interface{}
 		var err error
-		err = json.Unmarshal(data, &v)
-		return v, err
+		switch d := data.(type) {
+		case []byte:
+			err = json.Unmarshal(d, &v)
+			return v, err
+		case string:
+			err = json.Unmarshal([]byte(d), &v)
+			return v, err
+		case bytes.Buffer:
+			err = json.Unmarshal(d.Bytes(), &v)
+			return v, err
+		case io.Reader:
+			var buf bytes.Buffer
+			buf.ReadFrom(d)
+			err = json.Unmarshal(buf.Bytes(), &v)
+			return v, err
+		}
+		return nil, fmt.Errorf("TypeAssertionError")
 	},
 	"formatTime": func(srcLayout, targetLayout, input string) (string, error) {
 		t, err := time.Parse(srcLayout, input)
