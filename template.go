@@ -13,10 +13,19 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // TemplateFuncs ...
 var TemplateFuncs = map[string]interface{}{
+	"uuid": func() (string, error) {
+		id, err := uuid.NewRandom()
+		if err != nil {
+			return "", err
+		}
+		return id.String(), nil
+	},
 	"toJSON": func(v interface{}) string {
 		a, _ := json.Marshal(v)
 		return string(a)

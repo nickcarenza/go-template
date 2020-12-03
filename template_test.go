@@ -429,3 +429,45 @@ func TestUnquote(t *testing.T) {
 		t.Error(`Unexpected result`, buf.String())
 	}
 }
+
+func TestJsonNumberMethod(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{.number.Float64 | printf \"%.0f\"}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"number": json.Number("5"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `5` {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestUUID(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ uuid }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(buf.String()) != 36 {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
