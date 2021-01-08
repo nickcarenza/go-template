@@ -412,3 +412,11 @@ func Parse(src string) (*Template, error) {
 	}
 	return &Template{t}, nil
 }
+
+// Must is an feature copy of template.Must
+func Must(t *Template, err error) *Template {
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
