@@ -403,3 +403,12 @@ func (t *Template) UnmarshalJSON(data []byte) (err error) {
 	t.Template, err = template.New("template").Funcs(TemplateFuncs).Parse(src)
 	return
 }
+
+// Parse is a shorthand for template.Parse using templatefuncs
+func Parse(src string) (*Template, error) {
+	t, err := template.New("template").Funcs(TemplateFuncs).Parse(src)
+	if err != nil {
+		return nil, err
+	}
+	return &Template{t}, nil
+}
