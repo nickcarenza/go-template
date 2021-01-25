@@ -563,3 +563,43 @@ func TestParseJSONIOReader(t *testing.T) {
 		t.Error(`Unexpected result`, buf.String())
 	}
 }
+
+func TestCacheSetAndGet(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ with (cacheSet \"test\" 5 \"1m\") }}{{ end }}{{ cacheGet \"test\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "5" {
+		t.Error(`Unexpected result`, buf.String())
+	}
+}
+
+func TestCacheCheckAndSet(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ $cachedVal := (cacheGet \"test2\") }}{{ if $cachedVal }}{{ print $cachedVal }}{{ else }}{{ $newVal := \"newVal\" }}{{ $_ := (cacheSet \"test2\" $newVal \"1m\") }}{{ print $newVal }}{{ end }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "newVal" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}

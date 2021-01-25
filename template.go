@@ -16,7 +16,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/the-control-group/go-timeutils"
+	"github.com/the-control-group/go-ttlcache"
 )
+
+var templateCache *ttlcache.TTLCache
+
+func init() {
+	// Create template cache
+	templateCache = ttlcache.NewTTLCache(15 * time.Minute)
+}
 
 // TemplateFuncs ...
 var TemplateFuncs = map[string]interface{}{
@@ -318,6 +327,17 @@ var TemplateFuncs = map[string]interface{}{
 			s = s[:len(s)-1]
 		}
 		return s
+	},
+	"cacheSet": func(key string, value interface{}, expire interface{}) (interface{}, error) {
+		exp, err := timeutils.InterfaceToApproxBigDuration(expire)
+		if err != nil {
+			return value, err
+		}
+		return value, templateCache.SetEx(key, value, time.Duration(exp))
+	},
+	"cacheGet": func(key string) interface{} {
+		v, _ := templateCache.Get(key)
+		return v
 	},
 }
 
