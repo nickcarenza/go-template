@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -388,8 +389,29 @@ var TemplateFuncs = map[string]interface{}{
 			return "", fmt.Errorf("No AuthX bearer token returned")
 		}
 		var authxBearerToken = tokenResponse.Data.CreateAuthorizations[0].Token
-		authxTokenCache.Set(cacheKey, authxBearerToken)
-		return authxToken, nil
+		tokenParts := strings.Split(strings.Split(authxBearerToken, " ")[1], ".")
+		jwtBase64 := tokenParts[1]
+		var jwtBytes []byte
+		jwtBytes, err = base64.RawURLEncoding.DecodeString(jwtBase64)
+		if err != nil {
+			return "", err
+		}
+		var jwt struct {
+			AID    string
+			Scopes []string
+			IAT    int64
+			EXP    int64
+			ISS    string
+			SUB    string
+			JTI    string
+		}
+		err = json.Unmarshal(jwtBytes, &jwt)
+		if err != nil {
+			return "", err
+		}
+		var expireAt = time.Duration(jwt.EXP-time.Now().Unix())*time.Second - time.Minute
+		authxTokenCache.SetEx(cacheKey, authxBearerToken, expireAt)
+		return authxBearerToken, nil
 	},
 	"cacheSet": func(key string, value interface{}, expire interface{}) (interface{}, error) {
 		exp, err := timeutils.InterfaceToApproxBigDuration(expire)
