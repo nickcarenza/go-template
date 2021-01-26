@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
@@ -21,10 +22,12 @@ import (
 )
 
 var templateCache *ttlcache.TTLCache
+var authxTokenCache *ttlcache.TTLCache
 
 func init() {
 	// Create template cache
 	templateCache = ttlcache.NewTTLCache(15 * time.Minute)
+	authxTokenCache = ttlcache.NewTTLCache(5 * time.Minute)
 }
 
 // TemplateFuncs ...
@@ -327,6 +330,66 @@ var TemplateFuncs = map[string]interface{}{
 			s = s[:len(s)-1]
 		}
 		return s
+	},
+	"getAuthXBearerToken": func(authxURL, authxToken, userId, scopes string) (string, error) {
+		var cacheKey = strings.Join([]string{authxURL, authxToken, userId, scopes}, "::")
+		cachedToken, _ := authxTokenCache.Get(cacheKey)
+		if cachedTokenString, ok := cachedToken.(string); ok {
+			return cachedTokenString, nil
+		}
+		var err error
+		var graphqlQuery = fmt.Sprintf(`mutation {
+			createAuthorizations(authorizations:[{
+				enabled: true
+				userId: %q
+				scopes: %s
+			}]) {
+				token(format:BEARER)
+			}
+		}`, userId, scopes)
+		var requestQuery = map[string]interface{}{
+			"query": graphqlQuery,
+		}
+		var requestBody []byte
+		requestBody, err = json.Marshal(requestQuery)
+		var req *http.Request
+		req, err = http.NewRequest("POST", authxURL, bytes.NewBuffer(requestBody))
+		if err != nil {
+			return "", err
+		}
+		req.Header.Set("Authorization", authxToken)
+		req.Header.Set("Content-Type", "application/json")
+		var res *http.Response
+		res, err = http.DefaultClient.Do(req)
+		var body []byte
+		body, err = ioutil.ReadAll(res.Body)
+		if err != nil {
+			return "", err
+		}
+		defer res.Body.Close()
+		var tokenResponse struct {
+			Errors []struct {
+				Message string `json:"message"`
+			} `json:"errors"`
+			Data struct {
+				CreateAuthorizations []struct {
+					Token string `json:"token"`
+				} `json:"createAuthorizations"`
+			} `json:"data"`
+		}
+		err = json.Unmarshal(body, &tokenResponse)
+		if err != nil {
+			return "", err
+		}
+		if tokenResponse.Errors != nil && len(tokenResponse.Errors) > 0 {
+			return "", fmt.Errorf("Authx error: %s", tokenResponse.Errors[0].Message)
+		}
+		if tokenResponse.Data.CreateAuthorizations == nil || len(tokenResponse.Data.CreateAuthorizations) == 0 {
+			return "", fmt.Errorf("No AuthX bearer token returned")
+		}
+		var authxBearerToken = tokenResponse.Data.CreateAuthorizations[0].Token
+		authxTokenCache.Set(cacheKey, authxBearerToken)
+		return authxToken, nil
 	},
 	"cacheSet": func(key string, value interface{}, expire interface{}) (interface{}, error) {
 		exp, err := timeutils.InterfaceToApproxBigDuration(expire)

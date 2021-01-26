@@ -3,6 +3,7 @@ package template
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 	"text/template"
 )
@@ -601,5 +602,26 @@ func TestCacheCheckAndSet(t *testing.T) {
 	}
 	if buf.String() != "newVal" {
 		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestGetAuthXBearerToken(t *testing.T) {
+	t.SkipNow()
+	var err error
+	var jsondata = []byte(`"{{ getAuthXBearerToken \"url...\" \"token...\" \"userId...\" ` + "`" + `[\"**:**:**\"]` + "`" + `}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !strings.HasPrefix(buf.String(), "Bearer") {
+		t.Error("No bearer token returned")
 	}
 }
