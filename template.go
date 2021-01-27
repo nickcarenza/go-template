@@ -332,22 +332,18 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return s
 	},
-	"getAuthXBearerToken": func(authxURL, authxToken, userId, scopes string) (string, error) {
-		var cacheKey = strings.Join([]string{authxURL, authxToken, userId, scopes}, "::")
+	"getAuthXBearerToken": func(authxURL, authxToken, authorizationId string) (string, error) {
+		var cacheKey = strings.Join([]string{authxURL, authxToken, authorizationId}, "::")
 		cachedToken, _ := authxTokenCache.Get(cacheKey)
 		if cachedTokenString, ok := cachedToken.(string); ok {
 			return cachedTokenString, nil
 		}
 		var err error
-		var graphqlQuery = fmt.Sprintf(`mutation {
-			createAuthorizations(authorizations:[{
-				enabled: true
-				userId: %q
-				scopes: %s
-			}]) {
+		var graphqlQuery = fmt.Sprintf(`query {
+			authorization(id: %q) {
 				token(format:BEARER)
 			}
-		}`, userId, scopes)
+		}`, authorizationId)
 		var requestQuery = map[string]interface{}{
 			"query": graphqlQuery,
 		}
@@ -370,13 +366,13 @@ var TemplateFuncs = map[string]interface{}{
 		defer res.Body.Close()
 		var tokenResponse struct {
 			Errors []struct {
-				Message string `json:"message"`
-			} `json:"errors"`
+				Message string
+			}
 			Data struct {
-				CreateAuthorizations []struct {
-					Token string `json:"token"`
-				} `json:"createAuthorizations"`
-			} `json:"data"`
+				Authorization struct {
+					Token string
+				}
+			}
 		}
 		err = json.Unmarshal(body, &tokenResponse)
 		if err != nil {
@@ -385,10 +381,7 @@ var TemplateFuncs = map[string]interface{}{
 		if tokenResponse.Errors != nil && len(tokenResponse.Errors) > 0 {
 			return "", fmt.Errorf("Authx error: %s", tokenResponse.Errors[0].Message)
 		}
-		if tokenResponse.Data.CreateAuthorizations == nil || len(tokenResponse.Data.CreateAuthorizations) == 0 {
-			return "", fmt.Errorf("No AuthX bearer token returned")
-		}
-		var authxBearerToken = tokenResponse.Data.CreateAuthorizations[0].Token
+		var authxBearerToken = tokenResponse.Data.Authorization.Token
 		tokenParts := strings.Split(strings.Split(authxBearerToken, " ")[1], ".")
 		jwtBase64 := tokenParts[1]
 		var jwtBytes []byte
