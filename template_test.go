@@ -694,9 +694,9 @@ func TestToApproxBigDurationJson(t *testing.T) {
 	}
 }
 
-func TestParseCIDR(t *testing.T) {
+func TestParseCIDRv6(t *testing.T) {
 	var err error
-	var jsondata = []byte(`"{{- print .ipv6 \"/64\" | parseCIDR -}}"`)
+	var jsondata = []byte(`"{{- if le (len .ip) 15 -}}{{ .ip }}{{- else -}}{{- print .ip \"/64\" | parseCIDR }}{{- end -}}"`)
 	var tmpl *Template
 	err = json.Unmarshal(jsondata, &tmpl)
 	if err != nil {
@@ -705,13 +705,35 @@ func TestParseCIDR(t *testing.T) {
 	}
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, map[string]interface{}{
-		"ipv6": "2601:201:4381:8a0:e830:3b3d:4b34:f2e3",
+		"ip": "2601:201:4381:8a0:e830:3b3d:4b34:f2e3",
 	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	if buf.String() != "2601:201:4381:8a0::/64" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestParseCIDRv4(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- if le (len .ip) 15 -}}{{ .ip }}{{- else -}}{{- print .ip \"/64\" | parseCIDR }}{{- end -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"ip": "96.230.197.226",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "96.230.197.226" {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }
