@@ -603,3 +603,115 @@ func TestCacheCheckAndSet(t *testing.T) {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }
+
+func TestDictLookup(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- $cardBrandMap := dict \"mastercard\" \"mastercard\" \"MC\" \"mastercard\" \"MasterCard\" \"mastercard\" \"visa\" \"visa\" \"Visa\" \"visa\" \"VI\" \"visa\" \"discover\" \"discover\" \"Discover\" \"discover\" \"DI\" \"discover\" \"american_express\" \"american_express\" \"American Express\" \"american_express\" \"american express\" \"american_express\" \"AX\" \"american_express\" \"jcb\" \"jcb\" \"JCB\" \"jcb\" -}}{{- $cardBrand := (coalesce (index $cardBrandMap (coalesce .paymentOptionPpd.card_network .paymentOptionPpd.tokenResponse.type \"visa\")) \"visa\") -}}{{- $cardBrand -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"paymentOptionPpd": map[string]interface{}{
+			"card_network": "visa",
+			"tokenResponse": map[string]interface{}{
+				"type": "VI",
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "visa" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestHttp(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- $headers := dict \"Accept-Version\" \"3\" -}}{{- $res := (http \"GET\" \"https://lookup.binlist.net/372723\" $headers ).Body | parseJSON -}}{{- index $res \"scheme\" -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "amex" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+	// t.Log(buf.String())
+}
+
+func TestToApproxBigDuration(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- (3600000000000 | toApproxBigDuration).Pretty -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "1h0m0s" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestToApproxBigDurationJson(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- (.n | toApproxBigDuration).Pretty -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"n": json.Number("3600000000000"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "1h0m0s" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestParseCIDR(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- print .ipv6 \"/64\" | parseCIDR -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"ipv6": "2601:201:4381:8a0:e830:3b3d:4b34:f2e3",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "2601:201:4381:8a0::/64" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}

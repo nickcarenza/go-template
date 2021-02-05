@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -416,6 +417,13 @@ var TemplateFuncs = map[string]interface{}{
 	"cacheGet": func(key string) interface{} {
 		v, _ := templateCache.Get(key)
 		return v
+	},
+	"parseCIDR": func(cidr string) (*net.IPNet, error) {
+		_, ipnet, err := net.ParseCIDR(cidr)
+		return ipnet, err
+	},
+	"toApproxBigDuration": func(i interface{}) (timeutils.ApproxBigDuration, error) {
+		return timeutils.InterfaceToApproxBigDuration(i)
 	},
 }
 

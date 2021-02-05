@@ -1,6 +1,6 @@
 github.com/google/uuid v1.1.2 h1:EVhdT+1Kseyi1/pUmXKaFxYsDNy9RQYkMWRH68J/W7Y=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/the-control-group/go-timeutils v0.0.0-20210125205228-178540b634ec h1:QGz+p+YrWHmOYUoEC9S1xWEyaKwRGRvScS2c+/kZD0Q=
-github.com/the-control-group/go-timeutils v0.0.0-20210125205228-178540b634ec/go.mod h1:gFTtZjXy9fAXaxIadXCklgZVTTclwLVWOZfbErh5Kf8=
+github.com/the-control-group/go-timeutils v0.0.0-20210205175328-e6a31b6ace4e h1:4mN1HBnkNNfP8KDf9UUd8E78CU4EpeUbU9mJgWqGk6I=
+github.com/the-control-group/go-timeutils v0.0.0-20210205175328-e6a31b6ace4e/go.mod h1:gFTtZjXy9fAXaxIadXCklgZVTTclwLVWOZfbErh5Kf8=
 github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad h1:9VoVoE7KZyLoPFe8htJ5VeURrbxDv4jOvl7Mk3gFJFU=
 github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad/go.mod h1:3K5xXcGnaPviMx7y8A/DyLUfwhVEyzGq3DX6bdORfUI=
