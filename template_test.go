@@ -779,3 +779,23 @@ func TestAddJsonNumber(t *testing.T) {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }
+
+func TestSliceString(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ slice \"123456\" 0 1 }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "1" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}

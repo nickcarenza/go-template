@@ -26,25 +26,16 @@ import (
 
 var templateCache *ttlcache.TTLCache
 var authxTokenCache *ttlcache.TTLCache
-
-// TemplateFuncs ...
-var TemplateFuncs = map[string]interface{}{}
+var sprigFuncs = sprig.FuncMap()
 
 func init() {
 	// Create template cache
 	templateCache = ttlcache.NewTTLCache(15 * time.Minute)
 	authxTokenCache = ttlcache.NewTTLCache(5 * time.Minute)
-
-	for k, v := range sprig.FuncMap() {
-		TemplateFuncs[k] = v
-	}
-	for k, v := range ExtraTemplateFuncs {
-		TemplateFuncs[k] = v
-	}
 }
 
-// ExtraTemplateFuncs ...
-var ExtraTemplateFuncs = map[string]interface{}{
+// TemplateFuncs ...
+var TemplateFuncs = map[string]interface{}{
 	"uuid": func() (string, error) {
 		id, err := uuid.NewRandom()
 		if err != nil {
@@ -436,6 +427,11 @@ var ExtraTemplateFuncs = map[string]interface{}{
 	"toApproxBigDuration": func(i interface{}) (timeutils.ApproxBigDuration, error) {
 		return timeutils.InterfaceToApproxBigDuration(i)
 	},
+	"int":     sprigFuncs["int"],
+	"atoi":    sprigFuncs["atoi"],
+	"b64dec":  sprigFuncs["b64dec"],
+	"b64enc":  sprigFuncs["b64enc"],
+	"ternary": sprigFuncs["ternary"],
 }
 
 func interfaceSlice(slice interface{}) []interface{} {
