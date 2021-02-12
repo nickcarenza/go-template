@@ -18,6 +18,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/sprig"
 	"github.com/google/uuid"
 	"github.com/the-control-group/go-timeutils"
 	"github.com/the-control-group/go-ttlcache"
@@ -26,14 +27,24 @@ import (
 var templateCache *ttlcache.TTLCache
 var authxTokenCache *ttlcache.TTLCache
 
+// TemplateFuncs ...
+var TemplateFuncs = map[string]interface{}{}
+
 func init() {
 	// Create template cache
 	templateCache = ttlcache.NewTTLCache(15 * time.Minute)
 	authxTokenCache = ttlcache.NewTTLCache(5 * time.Minute)
+
+	for k, v := range sprig.FuncMap() {
+		TemplateFuncs[k] = v
+	}
+	for k, v := range ExtraTemplateFuncs {
+		TemplateFuncs[k] = v
+	}
 }
 
-// TemplateFuncs ...
-var TemplateFuncs = map[string]interface{}{
+// ExtraTemplateFuncs ...
+var ExtraTemplateFuncs = map[string]interface{}{
 	"uuid": func() (string, error) {
 		id, err := uuid.NewRandom()
 		if err != nil {

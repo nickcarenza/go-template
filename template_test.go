@@ -737,3 +737,45 @@ func TestParseCIDRv4(t *testing.T) {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }
+
+func TestAdd(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ add 5 6}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "11" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestAddJsonNumber(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ add (.x.Int64 | int) 6}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"x": json.Number("5"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "11" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
