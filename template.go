@@ -517,6 +517,30 @@ func (t *Template) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+// ExecuteToString executes the template and returns the result as a string
+func (t *Template) ExecuteToString(data interface{}) (string, error) {
+	var tBuf bytes.Buffer
+	var err = t.Execute(&tBuf, data)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tBuf.String(), nil
+}
+
+// ExecuteToInt executes the template and returns the result as an int
+func (t *Template) ExecuteToInt(data interface{}) (int, error) {
+	var tBuf bytes.Buffer
+	var err = t.Execute(&tBuf, data)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return strconv.Atoi(tBuf.String())
+}
+
 // Parse is a shorthand for template.Parse using templatefuncs
 func Parse(src string) (*Template, error) {
 	t, err := template.New("template").Funcs(TemplateFuncs).Parse(src)
