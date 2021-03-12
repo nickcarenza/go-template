@@ -326,6 +326,9 @@ var TemplateFuncs = map[string]interface{}{
 	"add": func(a, b int) int {
 		return a + b
 	},
+	"addInt64": func(a, b int64) int64 {
+		return a + b
+	},
 	"unquote": func(s string) string {
 		if len(s) > 0 && s[0] == '"' {
 			s = s[1:]
@@ -428,6 +431,7 @@ var TemplateFuncs = map[string]interface{}{
 		return timeutils.InterfaceToApproxBigDuration(i)
 	},
 	"int":     sprigFuncs["int"],
+	"int64":     sprigFuncs["int64"],
 	"atoi":    sprigFuncs["atoi"],
 	"b64dec":  sprigFuncs["b64dec"],
 	"b64enc":  sprigFuncs["b64enc"],

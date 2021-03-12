@@ -730,6 +730,26 @@ func TestToApproxBigDurationJson(t *testing.T) {
 	}
 }
 
+func TestToApproxBigDurationMath(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- addInt64 100 (\"1h\" | toApproxBigDuration | int64) -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "3600000000100" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
 func TestParseCIDRv6(t *testing.T) {
 	var err error
 	var jsondata = []byte(`"{{- if le (len .ip) 15 -}}{{ .ip }}{{- else -}}{{- print .ip \"/64\" | parseCIDR }}{{- end -}}"`)
