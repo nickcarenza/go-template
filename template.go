@@ -482,6 +482,20 @@ func InterpolateMap(data interface{}, templateMap map[string]interface{}) (map[s
 				return nil, err
 			}
 			parsed[key] = str
+		} else if v, ok := i.(float64); ok {
+			parsed[key] = v
+		} else if v, ok := i.(int64); ok {
+			parsed[key] = v
+		} else if v, ok := i.(int); ok {
+			parsed[key] = v
+		} else if v, ok := i.(json.Number); ok {
+			f, err := v.Float64()
+			if err != nil {
+				return nil, err
+			}
+			parsed[key] = f
+		} else if v, ok := i.(bool); ok {
+			parsed[key] = v
 		} else if v, ok := i.(map[string]interface{}); ok {
 			deepParsed, err := InterpolateMap(data, v)
 			if err != nil {

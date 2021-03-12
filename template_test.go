@@ -27,6 +27,42 @@ func TestInterpolateMap(t *testing.T) {
 	}
 }
 
+func TestInterpolateMapTypes(t *testing.T) {
+	var tmpl = map[string]interface{}{
+		"string": "test",
+		"int":    1,
+		"float":  0.5,
+		"true":   true,
+		"false":  false,
+	}
+	var data = map[string]interface{}{}
+	res, err := InterpolateMap(data, tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if res["string"] != "test" {
+		t.Errorf("string is wrong %T:%[1]v", res["string"])
+		return
+	}
+	if res["int"] != 1 {
+		t.Errorf("int is wrong %T:%[1]v", res["int"])
+		return
+	}
+	if res["float"] != 0.5 {
+		t.Errorf("float is wrong %T:%[1]v", res["float"])
+		return
+	}
+	if b, ok := res["true"].(bool); !ok || b != true {
+		t.Errorf("true is wrong %T:%[1]v (%v,%v)", res["true"], b, ok)
+		return
+	}
+	if b, ok := res["false"].(bool); !ok || b != false {
+		t.Errorf("false is wrong %T:%[1]v (%v,%v)", res["false"], b, ok)
+		return
+	}
+}
+
 func TestTemplateFuncFormatTime(t *testing.T) {
 	var tpl = `{{formatTime "2006-01-02" "Mon Jan 2 2006" "2020-11-23"}}`
 	tmpl, err := template.New(t.Name()).Funcs(map[string]interface{}{
