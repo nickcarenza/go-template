@@ -430,12 +430,14 @@ var TemplateFuncs = map[string]interface{}{
 	"toApproxBigDuration": func(i interface{}) (timeutils.ApproxBigDuration, error) {
 		return timeutils.InterfaceToApproxBigDuration(i)
 	},
-	"int":     sprigFuncs["int"],
-	"int64":     sprigFuncs["int64"],
-	"atoi":    sprigFuncs["atoi"],
-	"b64dec":  sprigFuncs["b64dec"],
-	"b64enc":  sprigFuncs["b64enc"],
-	"ternary": sprigFuncs["ternary"],
+	"int":            sprigFuncs["int"],
+	"int64":          sprigFuncs["int64"],
+	"atoi":           sprigFuncs["atoi"],
+	"b64dec":         sprigFuncs["b64dec"],
+	"b64enc":         sprigFuncs["b64enc"],
+	"ternary":        sprigFuncs["ternary"],
+	"parseTime":      timeutils.ParseAny,
+	"parseTimeMaybe": timeutils.ParseAnyMaybe,
 }
 
 func interfaceSlice(slice interface{}) []interface{} {
