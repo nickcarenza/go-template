@@ -244,6 +244,8 @@ var TemplateFuncs = map[string]interface{}{
 				return "", err
 			}
 			return time.Unix(intVal, 0).Format(targetLayout), nil
+		case time.Time:
+			return v.Format(targetLayout), nil
 		default:
 			return "", fmt.Errorf("Invalid type for time.Unix in formatUnix")
 		}
@@ -437,7 +439,22 @@ var TemplateFuncs = map[string]interface{}{
 	"b64enc":         sprigFuncs["b64enc"],
 	"ternary":        sprigFuncs["ternary"],
 	"parseTime":      timeutils.ParseAny,
-	"parseTimeMaybe": timeutils.ParseAnyMaybe,
+	"maybeParseTime": timeutils.ParseAnyMaybe,
+	"formatAnyTime": func(targetLayout, input string) (string, error) {
+		t, err := timeutils.ParseAny(input)
+		if err != nil {
+			return "", err
+		}
+		return t.Format(targetLayout), nil
+	},
+	"maybeFormatAnyTime": func(targetLayout, input string) *string {
+		t := timeutils.ParseAnyMaybe(input)
+		if t == nil {
+			return nil
+		}
+		s := t.Format(targetLayout)
+		return &s
+	},
 }
 
 func interfaceSlice(slice interface{}) []interface{} {

@@ -903,3 +903,40 @@ func TestExecuteToInt(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMaybeFormatAnyTimeExists(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .sometimes_time | maybeFormatAnyTime \"2006-01-02\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"sometimes_time": "2006-01-02T15:04:05Z",
+	})
+	if buf.String() != "2006-01-02" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestMaybeFormatAnyTimeNoExists(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .sometimes_time | maybeFormatAnyTime \"2006-01-02\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+	})
+	if buf.String() != "" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
