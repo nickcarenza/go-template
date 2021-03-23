@@ -168,7 +168,7 @@ var TemplateFuncs = map[string]interface{}{
 		zipStr, _ = zip.(string)
 		plus4CodeStr, _ = plus4Code.(string)
 		fingerprint := strings.Join([]string{addressStr, cityStr, stateStr, zipStr, plus4CodeStr}, "_")
-		re := regexp.MustCompile("[^a-zA-Z0-9_]")
+		re := regexp.MustCompile(`[^\p{L}0-9]`)
 		fingerprint = re.ReplaceAllString(fingerprint, "_")
 		fingerprint = strings.ToLower(fingerprint)
 		return fingerprint
