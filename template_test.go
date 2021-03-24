@@ -976,3 +976,21 @@ func TestFingerprintAddressForeignCharacters(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestFingerprint(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ fingerprint \"1234 adams st.\" \"city\" \"state\" \"12345\" \"1234\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+	})
+	if buf.String() != "1234_adams_st__city_state_12345_1234" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}

@@ -160,6 +160,13 @@ var TemplateFuncs = map[string]interface{}{
 		email = strings.TrimSpace(email)
 		return email
 	},
+	"fingerprint": func(vars ...string) (fingerprint string) {
+		fingerprint = strings.Join(vars, "_")
+		re := regexp.MustCompile(`[^\p{L}0-9]`)
+		fingerprint = re.ReplaceAllString(fingerprint, "_")
+		fingerprint = strings.ToLower(fingerprint)
+		return
+	},
 	"fingerprint_address": func(address, city, state, zip, plus4Code interface{}) string {
 		var addressStr, cityStr, stateStr, zipStr, plus4CodeStr string
 		addressStr, _ = address.(string)
@@ -438,6 +445,13 @@ var TemplateFuncs = map[string]interface{}{
 	"b64dec":         sprigFuncs["b64dec"],
 	"b64enc":         sprigFuncs["b64enc"],
 	"ternary":        sprigFuncs["ternary"],
+	"sha1sum":        sprigFuncs["sha1sum"],
+	"sha256sum":      sprigFuncs["sha256sum"],
+	"bcrypt":         sprigFuncs["bcrypt"],
+	"htpasswd":       sprigFuncs["htpasswd"],
+	"randBytes":      sprigFuncs["randBytes"],
+	"encryptAES":     sprigFuncs["encryptAES"],
+	"decryptAES":     sprigFuncs["decryptAES"],
 	"parseTime":      timeutils.ParseAny,
 	"maybeParseTime": timeutils.ParseAnyMaybe,
 	"formatAnyTime": func(targetLayout, input string) (string, error) {
