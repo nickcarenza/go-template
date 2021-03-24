@@ -933,8 +933,7 @@ func TestMaybeFormatAnyTimeNoExists(t *testing.T) {
 		return
 	}
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, map[string]interface{}{
-	})
+	err = tmpl.Execute(&buf, map[string]interface{}{})
 	if buf.String() != "" {
 		t.Log(buf.String())
 		t.Fail()
@@ -951,8 +950,7 @@ func TestFingerprintAddress(t *testing.T) {
 		return
 	}
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, map[string]interface{}{
-	})
+	err = tmpl.Execute(&buf, map[string]interface{}{})
 	if buf.String() != "1234_adams_st__city_state_12345_1234" {
 		t.Log(buf.String())
 		t.Fail()
@@ -969,8 +967,7 @@ func TestFingerprintAddressForeignCharacters(t *testing.T) {
 		return
 	}
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, map[string]interface{}{
-	})
+	err = tmpl.Execute(&buf, map[string]interface{}{})
 	if buf.String() != "台江区_福州_福建_350000_" {
 		t.Log(buf.String())
 		t.Fail()
@@ -987,9 +984,42 @@ func TestFingerprint(t *testing.T) {
 		return
 	}
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, map[string]interface{}{
-	})
+	err = tmpl.Execute(&buf, map[string]interface{}{})
 	if buf.String() != "1234_adams_st__city_state_12345_1234" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestRight(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ right \"2019\" 2 }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if buf.String() != "19" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestLeft(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ left \"2019\" 2 }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if buf.String() != "20" {
 		t.Log(buf.String())
 		t.Fail()
 	}

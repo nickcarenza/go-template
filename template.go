@@ -447,9 +447,6 @@ var TemplateFuncs = map[string]interface{}{
 	"ternary":        sprigFuncs["ternary"],
 	"sha1sum":        sprigFuncs["sha1sum"],
 	"sha256sum":      sprigFuncs["sha256sum"],
-	"bcrypt":         sprigFuncs["bcrypt"],
-	"htpasswd":       sprigFuncs["htpasswd"],
-	"randBytes":      sprigFuncs["randBytes"],
 	"encryptAES":     sprigFuncs["encryptAES"],
 	"decryptAES":     sprigFuncs["decryptAES"],
 	"parseTime":      timeutils.ParseAny,
@@ -468,6 +465,18 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		s := t.Format(targetLayout)
 		return &s
+	},
+	"left": func(str string, n int) string {
+		if len(str) <= n {
+			return str
+		}
+		return str[:n]
+	},
+	"right": func(str string, n int) string {
+		if len(str) <= n {
+			return str
+		}
+		return str[len(str)-n:]
 	},
 }
 
