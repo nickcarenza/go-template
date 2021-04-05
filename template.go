@@ -158,7 +158,11 @@ var TemplateFuncs = map[string]interface{}{
 		re := regexp.MustCompile("[0-9]")
 		email = re.ReplaceAllString(email, "")
 		email = strings.TrimSpace(email)
+		email = strings.ToLower(email)
 		return email
+	},
+	"toLower": func(str string) string {
+		return strings.ToLower(str)
 	},
 	"fingerprint": func(vars ...string) (fingerprint string) {
 		fingerprint = strings.Join(vars, "_")
