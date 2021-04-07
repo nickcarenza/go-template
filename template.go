@@ -261,6 +261,19 @@ var TemplateFuncs = map[string]interface{}{
 			return "", fmt.Errorf("Invalid type for time.Unix in formatUnix")
 		}
 	},
+	"formatUnixFull": func(targetLayout string, seconds interface{}, nanoseconds interface{}) (string, error) {
+		var secs, nanos int64
+		var err error
+		secs, err = interfaceToInt64(seconds)
+		if err != nil {
+			return "", err
+		}
+		nanos, err = interfaceToInt64(nanoseconds)
+		if err != nil {
+			return "", err
+		}
+		return time.Unix(secs, nanos).Format(targetLayout), nil
+	},
 	"split": func(sep, input string) []string {
 		return strings.Split(input, sep)
 	},
@@ -620,4 +633,29 @@ func Must(t *Template, err error) *Template {
 		panic(err)
 	}
 	return t
+}
+
+func interfaceToInt64(i interface{}) (int64, error) {
+	switch v := i.(type) {
+	case int64:
+		return v, nil
+	case float64:
+		return int64(v), nil
+	case int:
+		return int64(v), nil
+	case string:
+		intVal, err := strconv.Atoi(v)
+		if err != nil {
+			return 0, err
+		}
+		return int64(intVal), nil
+	case json.Number:
+		intVal, err := v.Int64()
+		if err != nil {
+			return 0, err
+		}
+		return intVal, nil
+	default:
+		return 0, fmt.Errorf("Unable to convert type to int64")
+	}
 }

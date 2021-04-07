@@ -11,7 +11,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/the-control-group/go-timeutils v1.0.0
+	github.com/the-control-group/go-timeutils v1.0.1
 	github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 )
