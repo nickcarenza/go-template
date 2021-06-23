@@ -1044,3 +1044,20 @@ func TestLeft(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestBase64Enc(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"Basic {{ print \"user\" \":\" | b64enc }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if buf.String() != "Basic dXNlcjo=" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
