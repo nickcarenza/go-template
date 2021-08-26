@@ -1082,3 +1082,45 @@ func TestParseAnyTimeSub(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestToAmount(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (23.45435 | toAmount).ToString }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "23.45" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestToAmountDollars(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (23.99 | toAmount).Dollars }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "23" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}

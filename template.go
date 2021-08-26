@@ -20,6 +20,7 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/google/uuid"
+	"github.com/the-control-group/go-currency"
 	"github.com/the-control-group/go-timeutils"
 	"github.com/the-control-group/go-ttlcache"
 )
@@ -495,6 +496,15 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return str[len(str)-n:]
 	},
+	"toAmount": func(input interface{}) (amt *currency.Amount, err error) {
+		var str string
+		str, err = interfaceToString(input)
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal([]byte(str), &amt)
+		return
+	},
 }
 
 func interfaceSlice(slice interface{}) []interface{} {
@@ -657,5 +667,22 @@ func interfaceToInt64(i interface{}) (int64, error) {
 		return intVal, nil
 	default:
 		return 0, fmt.Errorf("Unable to convert type to int64")
+	}
+}
+
+func interfaceToString(i interface{}) (string, error) {
+	switch v := i.(type) {
+	case int64:
+		return strconv.Itoa(int(v)), nil
+	case float64:
+		return strconv.FormatFloat(v, 'f', 2, 64), nil
+	case int:
+		return strconv.Itoa(v), nil
+	case string:
+		return v, nil
+	case json.Number:
+		return v.String(), nil
+	default:
+		return "0", fmt.Errorf("Unable to convert type to string")
 	}
 }
