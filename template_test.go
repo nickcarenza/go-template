@@ -1061,3 +1061,24 @@ func TestBase64Enc(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestParseAnyTimeSub(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ ((parseTime \"2021-08-26 02:33:08.000\").Sub (parseTime \"2021-08-26 02:26:05.000\")).Seconds | int64 }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "423" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
