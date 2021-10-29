@@ -208,6 +208,21 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return http.DefaultClient.Do(req)
 	},
+	"http_data": func(method, url string, headers map[interface{}]interface{}, data string) (*http.Response, error) {
+		var req *http.Request
+		var err error
+		req, err = http.NewRequest(method, url, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Body = ioutil.NopCloser(bytes.NewBufferString(data))
+		if headers != nil {
+			for k, v := range headers {
+				req.Header.Set(k.(string), v.(string))
+			}
+		}
+		return http.DefaultClient.Do(req)
+	},
 	"parseJSON": func(data interface{}) (interface{}, error) {
 		var v interface{}
 		var err error

@@ -1124,3 +1124,118 @@ func TestToAmountDollars(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestBooleanTrue(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .boolTrue | toJSON }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"boolTrue": true,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "true" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestBooleanNull(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .boolTrue | toJSON }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "null" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestMapLoop(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ range $key, $value := .map }}\"prefix_{{ $key }}\": \"{{ $value }}\",{{ end }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"map": map[string]interface{}{
+			"k": "v",
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `"prefix_k":"v",` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestMap(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ .map }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"map": map[string]interface{}{
+			"k": "v",
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `map[k:v]` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestHttpGet(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ (http \"GET\" \"https://httpstat.us/200\" (dict)).StatusCode }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `200` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
