@@ -1188,7 +1188,7 @@ func TestMapLoop(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if buf.String() != `"prefix_k":"v",` {
+	if buf.String() != `"prefix_k": "v",` {
 		t.Log(buf.String())
 		t.Fail()
 	}
@@ -1235,6 +1235,69 @@ func TestHttpGet(t *testing.T) {
 		return
 	}
 	if buf.String() != `200` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestOnlyDigits(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ onlyDigits \"a123fg45\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `12345` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestOnlyAlpha(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ onlyAlpha \"0a123bc45d\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `abcd` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestNoSpace(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ nospace \" 1 2 3 4 5\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `12345` {
 		t.Log(buf.String())
 		t.Fail()
 	}

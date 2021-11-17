@@ -472,18 +472,22 @@ var TemplateFuncs = map[string]interface{}{
 	"toApproxBigDuration": func(i interface{}) (timeutils.ApproxBigDuration, error) {
 		return timeutils.InterfaceToApproxBigDuration(i)
 	},
-	"int":            sprigFuncs["int"],
-	"int64":          sprigFuncs["int64"],
-	"atoi":           sprigFuncs["atoi"],
-	"b64dec":         sprigFuncs["b64dec"],
-	"b64enc":         sprigFuncs["b64enc"],
-	"ternary":        sprigFuncs["ternary"],
-	"sha1sum":        sprigFuncs["sha1sum"],
-	"sha256sum":      sprigFuncs["sha256sum"],
-	"encryptAES":     sprigFuncs["encryptAES"],
-	"decryptAES":     sprigFuncs["decryptAES"],
-	"parseTime":      timeutils.ParseAny,
-	"maybeParseTime": timeutils.ParseAnyMaybe,
+	"int":             sprigFuncs["int"],
+	"int64":           sprigFuncs["int64"],
+	"atoi":            sprigFuncs["atoi"],
+	"b64dec":          sprigFuncs["b64dec"],
+	"b64enc":          sprigFuncs["b64enc"],
+	"ternary":         sprigFuncs["ternary"],
+	"sha1sum":         sprigFuncs["sha1sum"],
+	"sha256sum":       sprigFuncs["sha256sum"],
+	"encryptAES":      sprigFuncs["encryptAES"],
+	"decryptAES":      sprigFuncs["decryptAES"],
+	"nospace":         sprigFuncs["nospace"],
+	"substr":          sprigFuncs["substr"],
+	"regexMatch":      sprigFuncs["regexMatch"],
+	"regexReplaceAll": sprigFuncs["regexReplaceAll"],
+	"parseTime":       timeutils.ParseAny,
+	"maybeParseTime":  timeutils.ParseAnyMaybe,
 	"formatAnyTime": func(targetLayout, input string) (string, error) {
 		t, err := timeutils.ParseAny(input)
 		if err != nil {
@@ -520,7 +524,18 @@ var TemplateFuncs = map[string]interface{}{
 		json.Unmarshal([]byte(str), &amt)
 		return
 	},
+	"onlyDigits": func(input string) string {
+		return reNonDigit.ReplaceAllString(input, "")
+	},
+	"onlyAlpha": func(input string) string {
+		return reNonAlpha.ReplaceAllString(input, "")
+	},
 }
+
+var reDigit = regexp.MustCompile(`[0-9]`)
+var reNonDigit = regexp.MustCompile(`[^0-9]`)
+var reAlpha = regexp.MustCompile(`[a-zA-Z]`)
+var reNonAlpha = regexp.MustCompile(`[^a-zA-Z]`)
 
 func interfaceSlice(slice interface{}) []interface{} {
 	s := reflect.ValueOf(slice)
