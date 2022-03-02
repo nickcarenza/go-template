@@ -14,6 +14,6 @@ require (
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/the-control-group/go-currency v1.0.0
 	github.com/the-control-group/go-timeutils v1.0.3
-	github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad
+	github.com/the-control-group/go-ttlcache v1.0.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 )

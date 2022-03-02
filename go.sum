@@ -27,8 +27,8 @@ github.com/the-control-group/go-currency v1.0.0 h1:sY1hQUlNTtKbZiLiF6SXKFXrqo7FD
 github.com/the-control-group/go-currency v1.0.0/go.mod h1:gNGwhSuecuYDUnAfBmmlEq1FLtywtGTsw/W1HhBX9HE=
 github.com/the-control-group/go-timeutils v1.0.3 h1:RdTlGDzsjFT7pSoxASYnKIBzOjUR+xcoOpKxFvNS4B8=
 github.com/the-control-group/go-timeutils v1.0.3/go.mod h1:gFTtZjXy9fAXaxIadXCklgZVTTclwLVWOZfbErh5Kf8=
-github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad h1:9VoVoE7KZyLoPFe8htJ5VeURrbxDv4jOvl7Mk3gFJFU=
-github.com/the-control-group/go-ttlcache v0.0.0-20210125190327-3bccb64e95ad/go.mod h1:3K5xXcGnaPviMx7y8A/DyLUfwhVEyzGq3DX6bdORfUI=
+github.com/the-control-group/go-ttlcache v1.0.0 h1:BzrTEEQ8nZN3HzDQEbBs21iYiFWii4dlaXGsttedugg=
+github.com/the-control-group/go-ttlcache v1.0.0/go.mod h1:3K5xXcGnaPviMx7y8A/DyLUfwhVEyzGq3DX6bdORfUI=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad h1:DN0cp81fZ3njFcrLCytUHRSUkqBjfTo4Tx9RJTWs0EY=
 golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad/go.mod h1:jdWPYTVW3xRLrWPugEBEK3UY2ZEsg3UU495nc5E+M+I=
