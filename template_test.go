@@ -372,6 +372,72 @@ func TestUnmarshalJSONMultiplyFloat64(t *testing.T) {
 	}
 }
 
+func TestUnmarshalJSONDivideNum(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 0.1 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": json.Number("100"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `10` {
+		t.Error("Should result in 10", buf.String())
+	}
+}
+
+func TestUnmarshalJSONDivideNumericString(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 0.1 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": "100",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `10` {
+		t.Error("Should result in 10", buf.String())
+	}
+}
+
+func TestUnmarshalJSONDivideFloat64(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ multiply 0.1 .num }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"num": float64(100),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `10` {
+		t.Error("Should result in 10", buf.String())
+	}
+}
+
 func TestEscapedToJSON(t *testing.T) {
 	var err error
 	var jsondata = []byte("\"{{ .Event.comments | toJSON }}\"")
