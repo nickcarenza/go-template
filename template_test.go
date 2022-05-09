@@ -3,6 +3,8 @@ package template
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"os"
 	"testing"
 	"text/template"
 )
@@ -1384,6 +1386,46 @@ func TestNoSpace(t *testing.T) {
 		return
 	}
 	if buf.String() != `12345` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestRender(t *testing.T) {
+	var err error
+
+	// Create temp file to use as render template
+	f, err := os.CreateTemp(``, `go.template.test.render.*.tmp`)
+	// f, err := os.Create(`/tmp/go.template.test.render.0.tmp`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = f.WriteString(`{{ .data }}`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	// defer os.Remove(f.Name())
+
+	// Create main template to call partial by filename
+	t.Log(fmt.Sprintf(`"{{ render \"%s\" . }}"`, f.Name()))
+	var jsondata = []byte(fmt.Sprintf(`"{{ render \"%s\" . }}"`, f.Name()))
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"data": "x",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `x` {
 		t.Log(buf.String())
 		t.Fail()
 	}

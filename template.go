@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path"
 	"reflect"
 	"regexp"
 	"sort"
@@ -588,6 +589,27 @@ var TemplateFuncs = map[string]interface{}{
 	},
 }
 
+// The `render` method is special since it refers back to TemplateFuncs
+// It needs to be defined afterwards
+func init() {
+	TemplateFuncs["render"] = func(filename string, data interface{}) (string, error) {
+		tmpl, err := template.New("render").Funcs(TemplateFuncs).ParseFiles(filename)
+
+		if err != nil {
+			return ``, err
+		}
+
+		var tBuf bytes.Buffer
+		err = tmpl.ExecuteTemplate(&tBuf, path.Base(filename), data)
+
+		if err != nil {
+			return ``, err
+		}
+
+		return tBuf.String(), nil
+	}
+}
+
 var reDigit = regexp.MustCompile(`[0-9]`)
 var reNonDigit = regexp.MustCompile(`[^0-9]`)
 var reAlpha = regexp.MustCompile(`[a-zA-Z]`)
@@ -615,7 +637,7 @@ func interfaceSlice(slice interface{}) []interface{} {
 
 // Interpolate simplifies interpolating a template string with data
 func Interpolate(data interface{}, text string) (string, error) {
-	tmpl, err := template.New("test").Funcs(TemplateFuncs).Parse(text)
+	tmpl, err := template.New("tmpl").Funcs(TemplateFuncs).Parse(text)
 
 	if err != nil {
 		return text, err
