@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
@@ -16,4 +17,5 @@ require (
 	github.com/the-control-group/go-timeutils v1.0.3
 	github.com/the-control-group/go-ttlcache v1.0.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0
 )

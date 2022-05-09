@@ -23,6 +23,7 @@ import (
 	"github.com/the-control-group/go-currency"
 	"github.com/the-control-group/go-timeutils"
 	"github.com/the-control-group/go-ttlcache"
+	"gopkg.in/square/go-jose.v2"
 )
 
 var templateCache *ttlcache.TTLCache
@@ -529,6 +530,61 @@ var TemplateFuncs = map[string]interface{}{
 	},
 	"onlyAlpha": func(input string) string {
 		return reNonAlpha.ReplaceAllString(input, "")
+	},
+	"joseSign": func(payload string, key string, alg jose.SignatureAlgorithm) (string, error) {
+		var jwk jose.JSONWebKey
+		err := jwk.UnmarshalJSON([]byte(key))
+		if err != nil {
+			return "unable to parse", err
+		}
+
+		signer, err := jose.NewSigner(jose.SigningKey{
+			Algorithm: alg,
+			Key:       jwk,
+		}, nil)
+
+		if err != nil {
+			return "unable to create signer", err
+		}
+
+		jws, err := signer.Sign([]byte(payload))
+		if err != nil {
+			return "unable to sign", err
+		}
+
+		cs, err := jws.CompactSerialize()
+		if err != nil {
+			return "unable to sign", err
+		}
+		return cs, nil
+	},
+	"joseEncrypt": func(payload string, key string, enc jose.ContentEncryption, alg jose.KeyAlgorithm) (string, error) {
+		var jwk jose.JSONWebKey
+
+		err := jwk.UnmarshalJSON([]byte(key))
+		if err != nil {
+			return "unable to parse", err
+		}
+
+		encryptor, err := jose.NewEncrypter(enc, jose.Recipient{
+			Algorithm: alg,
+			Key:       jwk.Public(),
+		}, nil)
+
+		if err != nil {
+			return "unable to create encrypter", err
+		}
+
+		jws, err := encryptor.Encrypt([]byte(payload))
+		if err != nil {
+			return "unable to encrypt", err
+		}
+
+		cs, err := jws.CompactSerialize()
+		if err != nil {
+			return "unable to serialize", err
+		}
+		return cs, nil
 	},
 }
 
