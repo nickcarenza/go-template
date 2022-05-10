@@ -28,6 +28,7 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+// Config is a convenience struct for importing packages
 type Config struct {
 	// Allows use of the UNSAFE_render method from go-template
 	AllowUnsafeRender bool `json:"allowUnsafeRender"`
@@ -35,6 +36,7 @@ type Config struct {
 	Partials []string `json:"partials"`
 }
 
+// Configure calls each of the configuration functions based on the config provided
 func Configure(cfg Config) error {
 	AllowUnsafeRender(cfg.AllowUnsafeRender)
 	err := LoadPartialFiles(cfg.Partials...)
@@ -637,7 +639,7 @@ func unsafeRender(filename string, data interface{}) (string, error) {
 // It will be cloned
 var RootTemplate = template.New("root").Funcs(TemplateFuncs)
 
-// Adds `USAFE_render` to the RootTemplate funcs
+// AllowUnsafeRender adds `USAFE_render` to the RootTemplate funcs
 // Is is potentially unsafe because it exposes the ability for a template to read any file into a template.
 func AllowUnsafeRender(allow bool) {
 	if allow {
@@ -651,11 +653,13 @@ func AllowUnsafeRender(allow bool) {
 	}
 }
 
+// LoadPartialFiles parses the given filenames and adds them to the RootTemplate
 func LoadPartialFiles(filenames ...string) (err error) {
 	_, err = RootTemplate.ParseFiles(filenames...)
 	return
 }
 
+// LoadPartial parses the given template strings and adds it to the RootTemplate
 func LoadPartial(template string) (err error) {
 	_, err = RootTemplate.Parse(template)
 	return
