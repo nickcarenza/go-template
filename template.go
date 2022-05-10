@@ -659,8 +659,8 @@ func LoadPartialFiles(filenames ...string) (err error) {
 }
 
 // LoadPartial parses the given template strings and adds it to the RootTemplate
-func LoadPartial(template string) (err error) {
-	_, err = RootTemplate.Parse(template)
+func LoadPartial(name, template string) (err error) {
+	_, err = RootTemplate.New(name).Parse(template)
 	return
 }
 
