@@ -37,10 +37,12 @@ type Config struct {
 }
 
 // Configure calls each of the configuration functions based on the config provided
-func Configure(cfg Config) error {
+func Configure(cfg Config) (err error) {
 	AllowUnsafeRender(cfg.AllowUnsafeRender)
-	err := LoadPartialFiles(cfg.Partials...)
-	return err
+	if cfg.Partials != nil && len(cfg.Partials) > 0 {
+		err = LoadPartialFiles(cfg.Partials...)
+	}
+	return
 }
 
 var templateCache *ttlcache.TTLCache
