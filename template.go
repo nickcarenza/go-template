@@ -645,11 +645,11 @@ var RootTemplate = template.New("root").Funcs(TemplateFuncs)
 // Is is potentially unsafe because it exposes the ability for a template to read any file into a template.
 func AllowUnsafeRender(allow bool) {
 	if allow {
-		RootTemplate = RootTemplate.Funcs(map[string]interface{}{
+		RootTemplate.Funcs(map[string]interface{}{
 			"UNSAFE_render": unsafeRender,
 		})
 	} else {
-		RootTemplate = RootTemplate.Funcs(map[string]interface{}{
+		RootTemplate.Funcs(map[string]interface{}{
 			"UNSAFE_render": disabledUnsafeRender,
 		})
 	}

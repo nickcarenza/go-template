@@ -1472,7 +1472,6 @@ func TestJsonAllowUnsafeRender(t *testing.T) {
 	defer AllowUnsafeRender(false)
 
 	// Create main template to call partial by filename
-	t.Log(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
 	var jsondata = []byte(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
 	var tmpl *Template
 	err = json.Unmarshal(jsondata, &tmpl)
@@ -1511,7 +1510,6 @@ func TestJsonDisallowUnsafeRender(t *testing.T) {
 	defer os.Remove(f.Name())
 
 	// Create main template to call partial by filename
-	t.Log(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
 	var jsondata = []byte(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
 	var tmpl *Template
 	err = json.Unmarshal(jsondata, &tmpl)
