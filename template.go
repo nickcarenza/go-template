@@ -28,6 +28,13 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+type Config struct {
+	// Allows use of the UNSAFE_render method from go-template
+	AllowUnsafeRender bool `json:"allowUnsafeRender"`
+	// Partials to load
+	Partials []string `json:"partials"`
+}
+
 var templateCache *ttlcache.TTLCache
 var authxTokenCache *ttlcache.TTLCache
 var sprigFuncs = sprig.FuncMap()
