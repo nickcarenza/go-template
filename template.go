@@ -645,14 +645,11 @@ var RootTemplate = template.New("root").Funcs(TemplateFuncs)
 // Is is potentially unsafe because it exposes the ability for a template to read any file into a template.
 func AllowUnsafeRender(allow bool) {
 	if allow {
-		RootTemplate.Funcs(map[string]interface{}{
-			"UNSAFE_render": unsafeRender,
-		})
+		TemplateFuncs["UNSAFE_render"] = unsafeRender
 	} else {
-		RootTemplate.Funcs(map[string]interface{}{
-			"UNSAFE_render": disabledUnsafeRender,
-		})
+		TemplateFuncs["UNSAFE_render"] = disabledUnsafeRender
 	}
+	RootTemplate.Funcs(TemplateFuncs)
 }
 
 // LoadPartialFiles parses the given filenames and adds them to the RootTemplate
