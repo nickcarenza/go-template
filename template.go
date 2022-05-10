@@ -35,6 +35,12 @@ type Config struct {
 	Partials []string `json:"partials"`
 }
 
+func Configure(cfg Config) error {
+	AllowUnsafeRender(cfg.AllowUnsafeRender)
+	err := LoadPartialFiles(cfg.Partials...)
+	return err
+}
+
 var templateCache *ttlcache.TTLCache
 var authxTokenCache *ttlcache.TTLCache
 var sprigFuncs = sprig.FuncMap()
