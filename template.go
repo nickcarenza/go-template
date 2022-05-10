@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -38,6 +39,8 @@ func init() {
 }
 
 // TemplateFuncs ...
+// DEPRECATED will become private variable in a future release
+// Add functions to the RootTemplate instead
 var TemplateFuncs = map[string]interface{}{
 	"uuid": func() (string, error) {
 		id, err := uuid.NewRandom()
@@ -587,27 +590,62 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return cs, nil
 	},
+	"UNSAFE_render": disabledUnsafeRender,
 }
 
-// The `render` method is special since it refers back to TemplateFuncs
-// It needs to be defined afterwards
-func init() {
-	TemplateFuncs["render"] = func(filename string, data interface{}) (string, error) {
-		tmpl, err := template.New("render").Funcs(TemplateFuncs).ParseFiles(filename)
+func disabledUnsafeRender(filename string, data interface{}) (string, error) {
+	return ``, errors.New("UNSAFE_render method is disabled")
+}
 
-		if err != nil {
-			return ``, err
-		}
+func unsafeRender(filename string, data interface{}) (string, error) {
+	tmpl, err := RootTemplate.Clone()
 
-		var tBuf bytes.Buffer
-		err = tmpl.ExecuteTemplate(&tBuf, path.Base(filename), data)
-
-		if err != nil {
-			return ``, err
-		}
-
-		return tBuf.String(), nil
+	if err != nil {
+		return ``, err
 	}
+
+	_, err = tmpl.ParseFiles(filename)
+
+	if err != nil {
+		return ``, err
+	}
+
+	var tBuf bytes.Buffer
+	err = tmpl.ExecuteTemplate(&tBuf, path.Base(filename), data)
+
+	if err != nil {
+		return ``, err
+	}
+
+	return tBuf.String(), nil
+}
+
+// RootTemplate can be loaded with partials to be used in other templates
+// It will be cloned
+var RootTemplate = template.New("root").Funcs(TemplateFuncs)
+
+// Adds `USAFE_render` to the RootTemplate funcs
+// Is is potentially unsafe because it exposes the ability for a template to read any file into a template.
+func AllowUnsafeRender(allow bool) {
+	if allow {
+		RootTemplate = RootTemplate.Funcs(map[string]interface{}{
+			"UNSAFE_render": unsafeRender,
+		})
+	} else {
+		RootTemplate = RootTemplate.Funcs(map[string]interface{}{
+			"UNSAFE_render": disabledUnsafeRender,
+		})
+	}
+}
+
+func LoadPartialFiles(filenames ...string) (err error) {
+	_, err = RootTemplate.ParseFiles(filenames...)
+	return
+}
+
+func LoadPartial(template string) (err error) {
+	_, err = RootTemplate.Parse(template)
+	return
 }
 
 var reDigit = regexp.MustCompile(`[0-9]`)
@@ -637,7 +675,13 @@ func interfaceSlice(slice interface{}) []interface{} {
 
 // Interpolate simplifies interpolating a template string with data
 func Interpolate(data interface{}, text string) (string, error) {
-	tmpl, err := template.New("tmpl").Funcs(TemplateFuncs).Parse(text)
+	tmpl, err := RootTemplate.Clone()
+
+	if err != nil {
+		return text, err
+	}
+
+	_, err = tmpl.Parse(text)
 
 	if err != nil {
 		return text, err
@@ -708,7 +752,15 @@ func (t *Template) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	t.Template, err = template.New("template").Funcs(TemplateFuncs).Parse(src)
+
+	t.Template, err = RootTemplate.Clone()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = t.Template.Parse(src)
+
 	return
 }
 
@@ -737,11 +789,18 @@ func (t *Template) ExecuteToInt(data interface{}) (int, error) {
 }
 
 // Parse is a shorthand for template.Parse using templatefuncs
+// Uses a clone of RootTemplate as a base
 func Parse(src string) (*Template, error) {
-	t, err := template.New("template").Funcs(TemplateFuncs).Parse(src)
+	t, err := RootTemplate.Clone()
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = t.Parse(src)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Template{t}, nil
 }
 

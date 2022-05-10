@@ -1391,12 +1391,11 @@ func TestNoSpace(t *testing.T) {
 	}
 }
 
-func TestRender(t *testing.T) {
+func TestInterpolateDisallowUnsafeRender(t *testing.T) {
 	var err error
 
 	// Create temp file to use as render template
 	f, err := os.CreateTemp(``, `go.template.test.render.*.tmp`)
-	// f, err := os.Create(`/tmp/go.template.test.render.0.tmp`)
 	if err != nil {
 		t.Error(err)
 		return
@@ -1406,11 +1405,75 @@ func TestRender(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	// defer os.Remove(f.Name())
+	defer os.Remove(f.Name())
+
+	_, err = Interpolate(map[string]interface{}{
+		"data": "x",
+	}, fmt.Sprintf(`{{ UNSAFE_render "%s" . }}`, f.Name()))
+
+	if err == nil {
+		t.Fail()
+		return
+	}
+}
+
+func TestInterpolateAllowUnsafeRender(t *testing.T) {
+	var err error
+
+	// Create temp file to use as render template
+	f, err := os.CreateTemp(``, `go.template.test.render.*.tmp`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = f.WriteString(`{{ .data }}`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer os.Remove(f.Name())
+
+	AllowUnsafeRender(true)
+	defer AllowUnsafeRender(false)
+
+	res, err := Interpolate(map[string]interface{}{
+		"data": "x",
+	}, fmt.Sprintf(`{{ UNSAFE_render "%s" . }}`, f.Name()))
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != `x` {
+		t.Log(res)
+		t.Fail()
+		return
+	}
+}
+
+func TestJsonAllowUnsafeRender(t *testing.T) {
+	var err error
+
+	// Create temp file to use as render template
+	f, err := os.CreateTemp(``, `go.template.test.render.*.tmp`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = f.WriteString(`{{ .data }}`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer os.Remove(f.Name())
+
+	AllowUnsafeRender(true)
+	defer AllowUnsafeRender(false)
 
 	// Create main template to call partial by filename
-	t.Log(fmt.Sprintf(`"{{ render \"%s\" . }}"`, f.Name()))
-	var jsondata = []byte(fmt.Sprintf(`"{{ render \"%s\" . }}"`, f.Name()))
+	t.Log(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
+	var jsondata = []byte(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
 	var tmpl *Template
 	err = json.Unmarshal(jsondata, &tmpl)
 	if err != nil {
@@ -1428,5 +1491,40 @@ func TestRender(t *testing.T) {
 	if buf.String() != `x` {
 		t.Log(buf.String())
 		t.Fail()
+	}
+}
+
+func TestJsonDisallowUnsafeRender(t *testing.T) {
+	var err error
+
+	// Create temp file to use as render template
+	f, err := os.CreateTemp(``, `go.template.test.render.*.tmp`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_, err = f.WriteString(`{{ .data }}`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer os.Remove(f.Name())
+
+	// Create main template to call partial by filename
+	t.Log(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
+	var jsondata = []byte(fmt.Sprintf(`"{{ UNSAFE_render \"%s\" . }}"`, f.Name()))
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"data": "x",
+	})
+	if err == nil {
+		t.Fail()
+		return
 	}
 }
