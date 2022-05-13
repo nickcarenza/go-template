@@ -579,6 +579,29 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return cs, nil
 	},
+	"joseVerifySignature": func(payload, key string) (string, error) {
+		var jwk jose.JSONWebKey
+
+		err := jwk.UnmarshalJSON([]byte(key))
+		if err != nil {
+			fmt.Println("unmarshal error")
+			return "", err
+		}
+
+		jws, err := jose.ParseSigned(payload)
+		if err != nil {
+			fmt.Println("parse error")
+			return "", err
+		}
+
+		p, err := jws.Verify(jwk.Public().Key)
+		if err != nil {
+			fmt.Println("verify error")
+			return "", err
+		}
+
+		return string(p), nil
+	},
 	"joseEncrypt": func(payload string, key string, enc jose.ContentEncryption, alg jose.KeyAlgorithm) (string, error) {
 		var jwk jose.JSONWebKey
 
@@ -606,6 +629,26 @@ var TemplateFuncs = map[string]interface{}{
 			return "unable to serialize", err
 		}
 		return cs, nil
+	},
+	"joseDecrypt": func(payload, key string) (string, error) {
+		var jwk jose.JSONWebKey
+
+		err := jwk.UnmarshalJSON([]byte(key))
+		if err != nil {
+			return "unable to get key", err
+		}
+
+		decryptor, err := jose.ParseEncrypted(payload)
+
+		if err != nil {
+			return "unable to create decryptor", err
+		}
+
+		jws, err := decryptor.Decrypt(jwk)
+		if err != nil {
+			return "unable to decrypt", err
+		}
+		return string(jws), nil
 	},
 	"UNSAFE_render": disabledUnsafeRender,
 }
