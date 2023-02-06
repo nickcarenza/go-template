@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -59,6 +60,12 @@ func init() {
 // DEPRECATED will become private variable in a future release
 // Add functions to the RootTemplate instead
 var TemplateFuncs = map[string]interface{}{
+	"randomFloat64": func() float64 {
+		return rand.Float64()
+	},
+	"randomInt": func(min int, max int) int {
+		return rand.Intn(max-min+1) + min
+	},
 	"uuid": func() (string, error) {
 		id, err := uuid.NewRandom()
 		if err != nil {
@@ -223,10 +230,8 @@ var TemplateFuncs = map[string]interface{}{
 		if err != nil {
 			return nil, err
 		}
-		if headers != nil {
-			for k, v := range headers {
-				req.Header.Set(k.(string), v.(string))
-			}
+		for k, v := range headers {
+			req.Header.Set(k.(string), v.(string))
 		}
 		return http.DefaultClient.Do(req)
 	},
@@ -238,11 +243,11 @@ var TemplateFuncs = map[string]interface{}{
 			return nil, err
 		}
 		req.Body = ioutil.NopCloser(bytes.NewBufferString(data))
-		if headers != nil {
-			for k, v := range headers {
-				req.Header.Set(k.(string), v.(string))
-			}
+
+		for k, v := range headers {
+			req.Header.Set(k.(string), v.(string))
 		}
+
 		return http.DefaultClient.Do(req)
 	},
 	"parseJSON": func(data interface{}) (interface{}, error) {
@@ -296,7 +301,7 @@ var TemplateFuncs = map[string]interface{}{
 		case time.Time:
 			return v.Format(targetLayout), nil
 		default:
-			return "", fmt.Errorf("Invalid type for time.Unix in formatUnix")
+			return "", fmt.Errorf("invalid type for time.Unix in formatUnix")
 		}
 	},
 	"formatUnixFull": func(targetLayout string, seconds interface{}, nanoseconds interface{}) (string, error) {
@@ -337,7 +342,7 @@ var TemplateFuncs = map[string]interface{}{
 	},
 	"coalesce": func(values ...interface{}) interface{} {
 		for _, v := range values {
-			if v != nil {
+			if v != nil && (reflect.ValueOf(v).Kind() != reflect.Ptr || !reflect.ValueOf(v).IsNil()) {
 				return v
 			}
 		}
@@ -345,7 +350,7 @@ var TemplateFuncs = map[string]interface{}{
 	},
 	"sortMap": func(list []interface{}, sortKey string, dir string) ([]interface{}, error) {
 		if dir != "asc" && dir != "desc" {
-			return nil, fmt.Errorf("Invalid sort direction for sortMap")
+			return nil, fmt.Errorf("invalid sort direction for sortMap")
 		}
 
 		var err error
@@ -361,7 +366,7 @@ var TemplateFuncs = map[string]interface{}{
 			case nil:
 				a = ""
 			default:
-				err = fmt.Errorf("Invalid value type in sortMap: %T", _a)
+				err = fmt.Errorf("invalid value type in sortMap: %T", _a)
 				return false
 			}
 			switch _b := list[j].(map[string]interface{})[sortKey].(type) {
@@ -374,7 +379,7 @@ var TemplateFuncs = map[string]interface{}{
 			case nil:
 				b = ""
 			default:
-				err = fmt.Errorf("Invalid value type in sortMap: %T", _b)
+				err = fmt.Errorf("invalid value type in sortMap: %T", _b)
 				return false
 			}
 			if dir == "asc" {
@@ -419,6 +424,9 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		var requestBody []byte
 		requestBody, err = json.Marshal(requestQuery)
+		if err != nil {
+			return "", err
+		}
 		var req *http.Request
 		req, err = http.NewRequest("POST", authxURL, bytes.NewBuffer(requestBody))
 		if err != nil {
@@ -428,6 +436,9 @@ var TemplateFuncs = map[string]interface{}{
 		req.Header.Set("Content-Type", "application/json")
 		var res *http.Response
 		res, err = http.DefaultClient.Do(req)
+		if err != nil {
+			return "", err
+		}
 		var body []byte
 		body, err = ioutil.ReadAll(res.Body)
 		if err != nil {
@@ -449,7 +460,7 @@ var TemplateFuncs = map[string]interface{}{
 			return "", err
 		}
 		if tokenResponse.Errors != nil && len(tokenResponse.Errors) > 0 {
-			return "", fmt.Errorf("Authx error: %s", tokenResponse.Errors[0].Message)
+			return "", fmt.Errorf("authx error: %s", tokenResponse.Errors[0].Message)
 		}
 		var authxBearerToken = tokenResponse.Data.Authorization.Token
 		tokenParts := strings.Split(strings.Split(authxBearerToken, " ")[1], ".")
@@ -517,13 +528,21 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return t.Format(targetLayout), nil
 	},
-	"maybeFormatAnyTime": func(targetLayout, input string) *string {
-		t := timeutils.ParseAnyMaybe(input)
-		if t == nil {
+	"maybeFormatAnyTime": func(targetLayout string, input interface{}) *string {
+		switch v := input.(type) {
+		case string:
+			if v == "" {
+				return nil
+			}
+			t := timeutils.ParseAnyMaybe(v)
+			if t == nil {
+				return nil
+			}
+			s := t.Format(targetLayout)
+			return &s
+		default:
 			return nil
 		}
-		s := t.Format(targetLayout)
-		return &s
 	},
 	"left": func(str string, n int) string {
 		if len(str) <= n {
@@ -707,9 +726,10 @@ func LoadPartial(name, template string) (err error) {
 	return
 }
 
-var reDigit = regexp.MustCompile(`[0-9]`)
+// var reDigit = regexp.MustCompile(`[0-9]`)
 var reNonDigit = regexp.MustCompile(`[^0-9]`)
-var reAlpha = regexp.MustCompile(`[a-zA-Z]`)
+
+// var reAlpha = regexp.MustCompile(`[a-zA-Z]`)
 var reNonAlpha = regexp.MustCompile(`[^a-zA-Z]`)
 
 func interfaceSlice(slice interface{}) []interface{} {
@@ -892,7 +912,7 @@ func interfaceToInt64(i interface{}) (int64, error) {
 		}
 		return intVal, nil
 	default:
-		return 0, fmt.Errorf("Unable to convert type to int64")
+		return 0, fmt.Errorf("unable to convert type to int64")
 	}
 }
 
@@ -909,6 +929,6 @@ func interfaceToString(i interface{}) (string, error) {
 	case json.Number:
 		return v.String(), nil
 	default:
-		return "0", fmt.Errorf("Unable to convert type to string")
+		return "0", fmt.Errorf("unable to convert type to string")
 	}
 }
