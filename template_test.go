@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 	"text/template"
+	"time"
 )
 
 func TestInterpolateMap(t *testing.T) {
@@ -112,7 +113,7 @@ func TestTemplateFuncFormatUnix(t *testing.T) {
 		return
 	}
 
-	if tBuf.String() != "Mon Nov 23 2020" {
+	if tBuf.String() != time.Unix(1606158230, 0).Format("Mon Jan 2 2006") {
 		t.Error("Should format input unix timestamp according to format")
 	}
 }
@@ -861,7 +862,30 @@ func TestToApproxBigDurationMathToISO8601(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if buf.String() != "2021-04-08T16:32:20Z" {
+	if buf.String() != time.Unix(1617924740, 0).Format("2006-01-02T15:04:05Z") {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestToApproxBigDurationMathToISO8601UTC(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ addInt64 1617838340 ((\"1 day\" | toApproxBigDuration).Seconds | int64) | formatUnixTZ \"2006-01-02T15:04:05Z\" \"UTC\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != time.Unix(1617924740, 0).In(time.UTC).Format("2006-01-02T15:04:05Z") {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+	if buf.String() != "2021-04-08T23:32:20Z" {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }

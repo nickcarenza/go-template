@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -242,7 +241,7 @@ var TemplateFuncs = map[string]interface{}{
 		if err != nil {
 			return nil, err
 		}
-		req.Body = ioutil.NopCloser(bytes.NewBufferString(data))
+		req.Body = io.NopCloser(bytes.NewBufferString(data))
 
 		for k, v := range headers {
 			req.Header.Set(k.(string), v.(string))
@@ -278,6 +277,7 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return t.Format(targetLayout), nil
 	},
+	// DEPRECATED Use formatUnixTZ instead and specify the TZ. This function uses Local only.
 	"formatUnix": func(targetLayout string, input interface{}) (string, error) {
 		switch v := input.(type) {
 		case int64:
@@ -304,6 +304,7 @@ var TemplateFuncs = map[string]interface{}{
 			return "", fmt.Errorf("invalid type for time.Unix in formatUnix")
 		}
 	},
+	// DEPRECATED Use formatUnixFullTZ instead and specify the TZ. This function uses Local only.
 	"formatUnixFull": func(targetLayout string, seconds interface{}, nanoseconds interface{}) (string, error) {
 		var secs, nanos int64
 		var err error
@@ -316,6 +317,53 @@ var TemplateFuncs = map[string]interface{}{
 			return "", err
 		}
 		return time.Unix(secs, nanos).Format(targetLayout), nil
+	},
+	"formatUnixTZ": func(targetLayout string, timezone string, input interface{}) (string, error) {
+		tz, err := time.LoadLocation(timezone)
+		if err != nil {
+			return "", err
+		}
+		switch v := input.(type) {
+		case int64:
+			return time.Unix(v, 0).In(tz).Format(targetLayout), nil
+		case float64:
+			return time.Unix(int64(v), 0).In(tz).Format(targetLayout), nil
+		case int:
+			return time.Unix(int64(v), 0).In(tz).Format(targetLayout), nil
+		case string:
+			intVal, err := strconv.Atoi(v)
+			if err != nil {
+				return "", err
+			}
+			return time.Unix(int64(intVal), 0).In(tz).Format(targetLayout), nil
+		case json.Number:
+			intVal, err := v.Int64()
+			if err != nil {
+				return "", err
+			}
+			return time.Unix(intVal, 0).In(tz).Format(targetLayout), nil
+		case time.Time:
+			return v.In(tz).Format(targetLayout), nil
+		default:
+			return "", fmt.Errorf("invalid type for time.Unix in formatUnix")
+		}
+	},
+	"formatUnixFullTZ": func(targetLayout string, timezone string, seconds interface{}, nanoseconds interface{}) (string, error) {
+		var secs, nanos int64
+		var err error
+		secs, err = interfaceToInt64(seconds)
+		if err != nil {
+			return "", err
+		}
+		nanos, err = interfaceToInt64(nanoseconds)
+		if err != nil {
+			return "", err
+		}
+		tz, err := time.LoadLocation(timezone)
+		if err != nil {
+			return "", err
+		}
+		return time.Unix(secs, nanos).In(tz).Format(targetLayout), nil
 	},
 	"split": func(sep, input string) []string {
 		return strings.Split(input, sep)
@@ -440,7 +488,7 @@ var TemplateFuncs = map[string]interface{}{
 			return "", err
 		}
 		var body []byte
-		body, err = ioutil.ReadAll(res.Body)
+		body, err = io.ReadAll(res.Body)
 		if err != nil {
 			return "", err
 		}
