@@ -1583,3 +1583,22 @@ func TestJsonDisallowUnsafeRender(t *testing.T) {
 		return
 	}
 }
+
+func TestMarshalJson(t *testing.T) {
+	var err error
+	var jsondata = []byte(`{"template":"{{ print (int 0) }}"}`)
+	var tmpl UnmarshalTarget
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b, err := json.Marshal(tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if string(b) != `{"template":"{{print (int 0)}}"}` {
+		t.Fail()
+	}
+}

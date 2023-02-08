@@ -867,6 +867,10 @@ func (t *Template) ExecuteToInt(data interface{}) (int, error) {
 	return strconv.Atoi(tBuf.String())
 }
 
+func (t Template) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", t.Root.String())), nil
+}
+
 // Parse is a shorthand for template.Parse using templatefuncs
 // Uses a clone of RootTemplate as a base
 func Parse(src string) (*Template, error) {
