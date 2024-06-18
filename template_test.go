@@ -481,6 +481,37 @@ func TestUnmarshalJSONCompareEqInt(t *testing.T) {
 	}
 }
 
+func TestUnmarshalJSONCompareEq0(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ if eq 0.0 .Event.num.Float64 }}Equal{{ else }}Not Equal{{ end }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var buf bytes.Buffer
+	var event map[string]interface{}
+	dec := json.NewDecoder(bytes.NewReader([]byte(`{"num":0}`)))
+	dec.UseNumber()
+	err = dec.Decode(&event)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": event,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `Equal` {
+		t.Error("Should result in Equal, not", buf.String())
+	}
+}
+
 func TestUnmarshalJSONDivideFloat64(t *testing.T) {
 	var err error
 	var jsondata = []byte(`"{{ multiply 0.1 .num }}"`)
