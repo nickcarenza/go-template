@@ -555,6 +555,7 @@ var TemplateFuncs = map[string]interface{}{
 	},
 	"int":             sprigFuncs["int"],
 	"int64":           sprigFuncs["int64"],
+	"float64":         sprigFuncs["float64"],
 	"atoi":            sprigFuncs["atoi"],
 	"b64dec":          sprigFuncs["b64dec"],
 	"b64enc":          sprigFuncs["b64enc"],

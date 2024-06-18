@@ -419,6 +419,68 @@ func TestUnmarshalJSONDivideNumericString(t *testing.T) {
 	}
 }
 
+func TestUnmarshalJSONCompareEqFloat64(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ if eq 0.1 .Event.num.Float64 }}Equal{{ else }}Not Equal{{ end }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var buf bytes.Buffer
+	var event map[string]interface{}
+	dec := json.NewDecoder(bytes.NewReader([]byte(`{"num":0.1}`)))
+	dec.UseNumber()
+	err = dec.Decode(&event)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": event,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `Equal` {
+		t.Error("Should result in Equal, not", buf.String())
+	}
+}
+
+func TestUnmarshalJSONCompareEqInt(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ if eq 1.0 .Event.num.Float64 }}Equal{{ else }}Not Equal{{ end }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var buf bytes.Buffer
+	var event map[string]interface{}
+	dec := json.NewDecoder(bytes.NewReader([]byte(`{"num":1}`)))
+	dec.UseNumber()
+	err = dec.Decode(&event)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"Event": event,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `Equal` {
+		t.Error("Should result in Equal, not", buf.String())
+	}
+}
+
 func TestUnmarshalJSONDivideFloat64(t *testing.T) {
 	var err error
 	var jsondata = []byte(`"{{ multiply 0.1 .num }}"`)
@@ -972,6 +1034,28 @@ func TestAddJsonNumber(t *testing.T) {
 		return
 	}
 	if buf.String() != "11" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
+func TestEqJsonNumber(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ eq .x.Int64 5}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"x": json.Number("5"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "true" {
 		t.Errorf(`Unexpected result %q`, buf.String())
 	}
 }
