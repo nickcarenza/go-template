@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -20,6 +21,7 @@ import (
 	"text/template"
 	"time"
 
+	gcloud_storage "cloud.google.com/go/storage"
 	"github.com/Masterminds/sprig"
 	"github.com/google/uuid"
 	"github.com/the-control-group/go-currency"
@@ -717,6 +719,23 @@ var TemplateFuncs = map[string]interface{}{
 			return "unable to decrypt", err
 		}
 		return string(jws), nil
+	},
+	"gcloud_storage_get": func(bucket, object string) (string, error) {
+		ctx := context.Background()
+		client, err := gcloud_storage.NewClient(ctx)
+		if err != nil {
+			return "", err
+		}
+		rc, err := client.Bucket(bucket).Object(object).NewReader(ctx)
+		if err != nil {
+			return "", err
+		}
+		defer rc.Close()
+		body, err := io.ReadAll(rc)
+		if err != nil {
+			return "", err
+		}
+		return string(body), nil
 	},
 	"UNSAFE_render": disabledUnsafeRender,
 }
