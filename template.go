@@ -737,6 +737,19 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return string(body), nil
 	},
+	"nilSafeIndex": func(mapLike interface{}, index string) interface{} {
+		if mapLike == nil {
+			return nil
+		}
+		switch v := mapLike.(type) {
+		case map[string]interface{}:
+			return v[index]
+		case map[interface{}]interface{}:
+			return v[index]
+		default:
+			return nil
+		}
+	},
 	"UNSAFE_render": disabledUnsafeRender,
 }
 

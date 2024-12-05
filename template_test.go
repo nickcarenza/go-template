@@ -1741,3 +1741,70 @@ func TestMarshalJson(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestNilSafeIndexWithNil(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ coalesce (nilSafeIndex nil \"x\") \"success\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `success` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestNilSafeIndexWithoutNil(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ nilSafeIndex (dict \"x\" 5) \"x\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `5` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestNilSafeIndexWithoutNil2(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ nilSafeIndex .mapLike \"x\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"mapLike": map[string]interface{}{
+			"x": 5,
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `5` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
