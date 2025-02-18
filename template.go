@@ -750,6 +750,23 @@ var TemplateFuncs = map[string]interface{}{
 			return nil
 		}
 	},
+	"nilSafeIndexChain": func(mapLike interface{}, indices ...string) interface{} {
+		var carry = mapLike
+		for _, index := range indices {
+			if carry == nil {
+				return nil
+			}
+			switch v := carry.(type) {
+			case map[string]interface{}:
+				carry = v[index]
+			case map[interface{}]interface{}:
+				carry = v[index]
+			default:
+				return nil
+			}
+		}
+		return carry
+	},
 	"UNSAFE_render": disabledUnsafeRender,
 }
 

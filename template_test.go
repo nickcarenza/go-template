@@ -1808,3 +1808,57 @@ func TestNilSafeIndexWithoutNil2(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestNilSafeIndexChain(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ nilSafeIndexChain .mapLike \"a\" \"b\" \"c\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"mapLike": map[string]interface{}{
+			"a": map[string]interface{}{
+				"b": map[string]interface{}{
+					"c": 5,
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `5` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestNilSafeIndexChainWithNil(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ coalesce (nilSafeIndexChain .mapLike \"a\" \"b\" \"c\") \"success\" }}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"mapLike": map[string]interface{}{
+			"a": map[string]interface{}{},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != `success` {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
