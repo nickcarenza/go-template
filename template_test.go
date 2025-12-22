@@ -1069,6 +1069,28 @@ func TestAddJsonNumber(t *testing.T) {
 	}
 }
 
+func TestGtJsonNumber(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{ gt .x.Int64 6}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"x": json.Number("15"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "true" {
+		t.Errorf(`Unexpected result %q`, buf.String())
+	}
+}
+
 func TestEqJsonNumber(t *testing.T) {
 	var err error
 	var jsondata = []byte(`"{{ eq .x.Int64 5}}"`)
@@ -1361,6 +1383,29 @@ func TestParseAnyTimeSub(t *testing.T) {
 		return
 	}
 	if buf.String() != "423" {
+		t.Log(buf.String())
+		t.Fail()
+	}
+}
+
+func TestManipulateCoalescedDate(t *testing.T) {
+	var err error
+	var jsondata = []byte(`"{{- $timeToAdd := ((\"1 month\" | toApproxBigDuration).Seconds | int64) -}}{{- $baseDateTimeString := coalesce .datetimestring (now \"2006-01-02T15:04:05Z\") -}}{{- $baseDateTime := parseTime $baseDateTimeString -}}{{- $newDateTimestamp := addInt64 $baseDateTime.Unix $timeToAdd -}}{{- formatUnixFullTZ \"2006-01-02T15:04:05Z\" \"UTC\" $newDateTimestamp 0 -}}"`)
+	var tmpl *Template
+	err = json.Unmarshal(jsondata, &tmpl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, map[string]interface{}{
+		"datetimestring": "2025-05-25T11:47:10Z",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if buf.String() != "2025-06-24T11:47:10Z" {
 		t.Log(buf.String())
 		t.Fail()
 	}

@@ -489,6 +489,9 @@ var TemplateFuncs = map[string]interface{}{
 		if err != nil {
 			return "", err
 		}
+		if res.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("AuthX returned status code %d", res.StatusCode)
+		}
 		var body []byte
 		body, err = io.ReadAll(res.Body)
 		if err != nil {
