@@ -90,6 +90,12 @@ var TemplateFuncs = map[string]interface{}{
 	"trim": func(v, cutset string) string {
 		return strings.Trim(v, cutset)
 	},
+	"trimLeft": func(v, cutset string) string {
+		return strings.TrimLeft(v, cutset)
+	},
+	"trimRight": func(v, cutset string) string {
+		return strings.TrimRight(v, cutset)
+	},
 	"multiply": func(x interface{}, y interface{}) float64 {
 		var xFloat float64
 		var yFloat float64
@@ -770,6 +776,10 @@ var TemplateFuncs = map[string]interface{}{
 		}
 		return carry
 	},
+	// TODO
+	// "addDurationToTime": func(input interface{}, duration timeutils.ApproxBigDuration) (string, error) {
+
+	// },
 	"UNSAFE_render": disabledUnsafeRender,
 }
 
