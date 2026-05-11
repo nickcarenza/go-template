@@ -41,7 +41,7 @@ type Config struct {
 // Configure calls each of the configuration functions based on the config provided
 func Configure(cfg Config) (err error) {
 	AllowUnsafeRender(cfg.AllowUnsafeRender)
-	if cfg.Partials != nil && len(cfg.Partials) > 0 {
+	if len(cfg.Partials) > 0 {
 		err = LoadPartialFiles(cfg.Partials...)
 	}
 	return
@@ -518,7 +518,7 @@ var TemplateFuncs = map[string]interface{}{
 		if err != nil {
 			return "", err
 		}
-		if tokenResponse.Errors != nil && len(tokenResponse.Errors) > 0 {
+		if len(tokenResponse.Errors) > 0 {
 			return "", fmt.Errorf("authx error: %s", tokenResponse.Errors[0].Message)
 		}
 		var authxBearerToken = tokenResponse.Data.Authorization.Token
@@ -579,6 +579,9 @@ var TemplateFuncs = map[string]interface{}{
 	"substr":          sprigFuncs["substr"],
 	"regexMatch":      sprigFuncs["regexMatch"],
 	"regexReplaceAll": sprigFuncs["regexReplaceAll"],
+	"upper":           sprigFuncs["upper"],
+	"lower":           sprigFuncs["lower"],
+	"title":           sprigFuncs["title"],
 	"parseTime":       timeutils.ParseAny,
 	"maybeParseTime":  timeutils.ParseAnyMaybe,
 	"formatAnyTime": func(targetLayout, input string) (string, error) {
